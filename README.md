@@ -21,7 +21,7 @@ pip install -r requirements.txt
 
 ## Demo
 
-The `./demo_mask/` contains two trachea segmentation labels from the training datasets of the ATM22 and AIIB23 challenges. 
+The `./demo_mask/` contains two trachea segmentation labels from the training datasets of the [ATM22 challenge](https://github.com/EndoluminalSurgicalVision-IMR/ATM-22-Related-Work) and [AIIB23 challenge](https://github.com/Nandayang/AIIB23).
 
 1. Run ours_skel_parse Only
 
