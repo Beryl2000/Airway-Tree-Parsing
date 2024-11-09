@@ -55,27 +55,27 @@ The following table summarizes the results of our methods on the provided demo d
 | WingsNet | AIIB23_77.nii.gz       | 36s                | 254s   | 190         |
 
 
-<p align="center">
-  <figure style="display: inline-block; margin: 10px;">
-    <img src="./demo_output_Ours/ATM_001_0000.gif" alt="ATM_001_0000-Ours" width="45%">
-    <figcaption><b>ATM_001_0000 - Ours</b></figcaption>
-  </figure>
-  <figure style="display: inline-block; margin: 10px;">
-    <img src="./demo_output_Wingsnet/ATM_001_0000.gif" alt="ATM_001_0000-WingsNet" width="45%">
-    <figcaption><b>ATM_001_0000 - WingsNet</b></figcaption>
-  </figure>
-</p>
 
-<p align="center">
-  <figure style="display: inline-block; margin: 10px;">
-    <img src="./demo_output_Ours/AIIB23_77.gif" alt="AIIB23_77-Ours" width="45%">
-    <figcaption><b>AIIB23_77 - Ours</b></figcaption>
-  </figure>
-  <figure style="display: inline-block; margin: 10px;">
-    <img src="./demo_output_Wingsnet/AIIB23_77.gif" alt="AIIB23_77-WingsNet" width="45%">
-    <figcaption><b>AIIB23_77 - WingsNet</b></figcaption>
-  </figure>
-</p>
+<div style="text-align: center;">
+  <img src="./demo_output_Ours/ATM_001_0000.gif" alt="ATM_001_0000-Ours" width="45%">
+  <div><b>ATM_001_0000 - Ours</b></div>
+</div>
+
+<div style="text-align: center;">
+  <img src="./demo_output_Wingsnet/ATM_001_0000.gif" alt="ATM_001_0000-WingsNet" width="45%">
+  <div><b>ATM_001_0000 - WingsNet</b></div>
+</div>
+
+<div style="text-align: center;">
+  <img src="./demo_output_Ours/AIIB23_77.gif" alt="AIIB23_77-Ours" width="45%">
+  <div><b>AIIB23_77 - Ours</b></div>
+</div>
+
+<div style="text-align: center;">
+  <img src="./demo_output_Wingsnet/AIIB23_77.gif" alt="AIIB23_77-WingsNet" width="45%">
+  <div><b>AIIB23_77 - WingsNet</b></div>
+</div>
+
 
 ## Citation
 
