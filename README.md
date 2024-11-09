@@ -55,13 +55,27 @@ The following table summarizes the results of our methods on the provided demo d
 | WingsNet | AIIB23_77.nii.gz       | 36s                | 254s   | 190         |
 
 
-![ATM_001_0000-Ours](./demo_output_Ours/ATM_001_0000.gif)
+<p align="center">
+  <figure style="display: inline-block; margin: 10px;">
+    <img src="./demo_output_Ours/ATM_001_0000.gif" alt="ATM_001_0000-Ours" width="45%">
+    <figcaption><b>ATM_001_0000 - Ours</b></figcaption>
+  </figure>
+  <figure style="display: inline-block; margin: 10px;">
+    <img src="./demo_output_Wingsnet/ATM_001_0000.gif" alt="ATM_001_0000-WingsNet" width="45%">
+    <figcaption><b>ATM_001_0000 - WingsNet</b></figcaption>
+  </figure>
+</p>
 
-![ATM_001_0000-WingsNet](./demo_output_Wingsnet/ATM_001_0000.gif)
-
-![AIIB23_77-Ours](./demo_output_Ours/AIIB23_77.gif)
-
-![AIIB23_77-WingsNet](./demo_output_Wingsnet/AIIB23_77.gif)
+<p align="center">
+  <figure style="display: inline-block; margin: 10px;">
+    <img src="./demo_output_Ours/AIIB23_77.gif" alt="AIIB23_77-Ours" width="45%">
+    <figcaption><b>AIIB23_77 - Ours</b></figcaption>
+  </figure>
+  <figure style="display: inline-block; margin: 10px;">
+    <img src="./demo_output_Wingsnet/AIIB23_77.gif" alt="AIIB23_77-WingsNet" width="45%">
+    <figcaption><b>AIIB23_77 - WingsNet</b></figcaption>
+  </figure>
+</p>
 
 ## Citation
 
