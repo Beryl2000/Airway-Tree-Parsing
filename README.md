@@ -21,7 +21,7 @@ pip install -r requirements.txt
 
 ## Demo
 
-The `./demo_mask/` contains two trachea segmentation labels from the training datasets of the [ATM22 challenge](https://github.com/EndoluminalSurgicalVision-IMR/ATM-22-Related-Work) and [AIIB23 challenge](https://github.com/Nandayang/AIIB23).
+The `./demo_mask/` contains two airway segmentation labels from the training datasets of the [ATM22 challenge](https://github.com/EndoluminalSurgicalVision-IMR/ATM-22-Related-Work) and [AIIB23 challenge](https://github.com/Nandayang/AIIB23).
 
 1. Run ours_skel_parse Only
 
@@ -42,6 +42,18 @@ python main.py --pred_mask_path ./demo_mask/ --save_Wingsnet_path ./demo_output_
 
 ```
 This command will load predicted mask files from `./demo_mask/` and save the processed results to `./demo_output_Wingsnet/`.
+
+## Results
+
+The following table summarizes the results of our methods on the provided demo data:
+
+| Method             | Case      | Centerline segment time | Airway tree parse time | Num of Branches |
+|--------------------|--------------|-----------------------|-------------|---------------|
+| Ours (ours_skel_parse)    | ATM_001_0000.nii.gz        | 18s                | 13s   | 126        |
+| WingsNet (wingsnet_skel_parse)    | ATM_001_0000.nii.gz        | 30s                | 158s   | 129         |
+| Ours (ours_skel_parse) | AIIB23_77.nii.gz       | 12s                | 14s   | 183         |
+| WingsNet (wingsnet_skel_parse) | AIIB23_77.nii.gz       | 36                | 254   | 190         |
+
 
 
 
