@@ -17,10 +17,19 @@ You can install the necessary packages via pip:
 
 ```bash
 pip install -r requirements.txt
+```
+
+## Citation
+
+
+
 
 
 ## Citation
 
+If you use this project in your research, please cite the following papers:
+
+```bibtex
 @article{yang2024multi,
   title={Multi-Stage Airway Segmentation in Lung CT Based on Multi-scale Nested Residual UNet},
   author={Yang, Bingyu and Liao, Huai and Huang, Xinyan and Tian, Qingyao and Wu, Jinlin and Hu, Jingdi and Liu, Hongbin},
@@ -38,3 +47,4 @@ pip install -r requirements.txt
   year={2021},
   publisher={IEEE}
 }
+```
