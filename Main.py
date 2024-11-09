@@ -165,9 +165,9 @@ if __name__ == '__main__':
 
     parser.add_argument('--pred_mask_path', type=str, default='./demo_mask/',
                         help="Path to the directory containing predicted mask files.")
-    parser.add_argument('--save_path', type=str, default='./demo_output_Ours/',
-                        help="Directory where the output will be saved.")
-    parser.add_argument('--save_Wingsnet_path', type=str, default='./demo_output_Wingsnet/',
+    parser.add_argument('--save_path', type=str, default=None,
+                        help="Directory where the Ours output will be saved.")
+    parser.add_argument('--save_Wingsnet_path', type=str, default=None,
                         help="Directory where the Wingsnet output will be saved.")
     parser.add_argument('--merge_t', type=int, default=5,
                         help="Threshold for merging branches during airway skeleton parsing.")
@@ -179,12 +179,14 @@ if __name__ == '__main__':
     save_Wingsnet_path = args.save_Wingsnet_path
     merge_t = args.merge_t
 
-
     flist = os.listdir(pred_mask_path)
     flist.sort()
 
     for case in flist:
         pred, _, spacing = load_itk_image(os.path.join(pred_mask_path, case))
-        airway_topo = ours_skel_parse(pred, spacing, merge_t, save_path, case)
-        tree_parsing = wingsnet_skel_parse(pred, spacing, save_Wingsnet_path,
-                                           case)
+
+        if save_path is not None:
+            airway_topo = ours_skel_parse(pred, spacing, merge_t, save_path, case)
+        
+        if save_Wingsnet_path is not None:
+            tree_parsing = wingsnet_skel_parse(pred, spacing, save_Wingsnet_path, case)

@@ -19,9 +19,29 @@ You can install the necessary packages via pip:
 pip install -r requirements.txt
 ```
 
-## Citation
+## Demo
+
+The `./demo_mask/` contains two trachea segmentation labels from the training datasets of the ATM22 and AIIB23 challenges. 
+
+1. Run ours_skel_parse Only
+
+To run only ours_skel_parse and save the output, use the following command:
+
+```bash
+python main.py --pred_mask_path ./demo_mask/ --save_path ./demo_output_Ours/ --merge_t 5
+```
+This command will load predicted mask files from `./demo_mask/` and save the processed results to `./demo_output_Ours/`.`--merge_t`: Threshold for merging branches during airway skeleton parsing (default: 5).
 
 
+2. Run wingsnet_skel_parse Only
+
+To run only wingsnet_skel_parse and save the output, use the following command:
+
+```bash
+python main.py --pred_mask_path ./demo_mask/ --save_Wingsnet_path ./demo_output_Wingsnet/
+
+```
+This command will load predicted mask files from `./demo_mask/` and save the processed results to `./demo_output_Wingsnet/`.
 
 
 
