@@ -47,12 +47,12 @@ This command will load predicted mask files from `./demo_mask/` and save the pro
 
 The following table summarizes the results of our methods on the provided demo data:
 
-| Method             | Case      | Centerline segment time | Airway tree parse time | Num of Branches |
+| Method             | Case      | Centerline segment time | Airway tree parse time | Num of branches |
 |--------------------|--------------|-----------------------|-------------|---------------|
 | Ours    | ATM_001_0000.nii.gz        | 18s                | 13s   | 126        |
 | WingsNet    | ATM_001_0000.nii.gz        | 30s                | 158s   | 129         |
 | Ours | AIIB23_77.nii.gz       | 12s                | 14s   | 183         |
-| WingsNet | AIIB23_77.nii.gz       | 36                | 254   | 190         |
+| WingsNet | AIIB23_77.nii.gz       | 36s                | 254s   | 190         |
 
 
 
