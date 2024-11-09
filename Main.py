@@ -8,8 +8,8 @@ from skimage.measure import marching_cubes
 from skimage.morphology import skeletonize_3d
 
 from util import *
-from Wingsnet_skel_parse import *
-from Ours_skel_parse import Topology_Tree
+from wingsnet_skel_parse import *
+from ours_skel_parse import Topology_Tree
 
 
 def ours_skel_parse(pred, spacing, merge_t, save_dir, case):
