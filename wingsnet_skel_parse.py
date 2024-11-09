@@ -5,8 +5,8 @@ FROM:
 Zheng, Hao, et al. "Alleviating class-wise gradient imbalance for pulmonary airway segmentation." IEEE transactions on medical imaging 40.9 (2021): 2452-2462.
 """
 
-import numpy as np
 import os
+import numpy as np
 from scipy import ndimage
 import skimage.measure as measure
 

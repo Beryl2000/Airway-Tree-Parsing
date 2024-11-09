@@ -6,8 +6,8 @@ from skimage.morphology import skeletonize_3d,binary_closing,binary_dilation
 from scipy.ndimage.morphology import binary_fill_holes
 from scipy.interpolate import interp1d
 from scipy import ndimage
-import time
 import os
+import time
 
 from util import *
 
