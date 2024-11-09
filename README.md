@@ -49,10 +49,10 @@ The following table summarizes the results of our methods on the provided demo d
 
 | Method             | Case      | Centerline segment time | Airway tree parse time | Num of Branches |
 |--------------------|--------------|-----------------------|-------------|---------------|
-| Ours (ours_skel_parse)    | ATM_001_0000.nii.gz        | 18s                | 13s   | 126        |
-| WingsNet (wingsnet_skel_parse)    | ATM_001_0000.nii.gz        | 30s                | 158s   | 129         |
-| Ours (ours_skel_parse) | AIIB23_77.nii.gz       | 12s                | 14s   | 183         |
-| WingsNet (wingsnet_skel_parse) | AIIB23_77.nii.gz       | 36                | 254   | 190         |
+| Ours    | ATM_001_0000.nii.gz        | 18s                | 13s   | 126        |
+| WingsNet    | ATM_001_0000.nii.gz        | 30s                | 158s   | 129         |
+| Ours | AIIB23_77.nii.gz       | 12s                | 14s   | 183         |
+| WingsNet | AIIB23_77.nii.gz       | 36                | 254   | 190         |
 
 
 
