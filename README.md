@@ -19,3 +19,22 @@ You can install the necessary packages via pip:
 pip install -r requirements.txt
 
 
+## Citation
+
+@article{yang2024multi,
+  title={Multi-Stage Airway Segmentation in Lung CT Based on Multi-scale Nested Residual UNet},
+  author={Yang, Bingyu and Liao, Huai and Huang, Xinyan and Tian, Qingyao and Wu, Jinlin and Hu, Jingdi and Liu, Hongbin},
+  journal={arXiv preprint arXiv:2410.18456},
+  year={2024}
+}
+
+@article{zheng2021alleviating,
+  title={Alleviating class-wise gradient imbalance for pulmonary airway segmentation},
+  author={Zheng, Hao and Qin, Yulei and Gu, Yun and Xie, Fangfang and Yang, Jie and Sun, Jiayuan and Yang, Guang-Zhong},
+  journal={IEEE transactions on medical imaging},
+  volume={40},
+  number={9},
+  pages={2452--2462},
+  year={2021},
+  publisher={IEEE}
+}
