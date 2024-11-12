@@ -8,8 +8,8 @@ from skimage.measure import marching_cubes
 from skimage.morphology import skeletonize_3d
 
 from util import *
-from wingsnet_skel_parse import *
-from ours_skel_parse import Topology_Tree
+from ATM22_skel_parse import *
+from Ours_skel_parse import Topology_Tree
 
 
 def ours_skel_parse(pred, spacing, merge_t, save_dir, case):
@@ -54,7 +54,7 @@ def ours_skel_parse(pred, spacing, merge_t, save_dir, case):
 
 
 
-def wingsnet_skel_parse(label, spacing, olddir, case):
+def atm22_skel_parse(label, spacing, olddir, case):
     colors = []
     color_list = [
         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D',
@@ -167,8 +167,8 @@ if __name__ == '__main__':
                         help="Path to the directory containing predicted mask files.")
     parser.add_argument('--save_path', type=str, default=None,
                         help="Directory where the Ours output will be saved.")
-    parser.add_argument('--save_Wingsnet_path', type=str, default=None,
-                        help="Directory where the Wingsnet output will be saved.")
+    parser.add_argument('--save_ATM22_path', type=str, default=None,
+                        help="Directory where the ATM22 output will be saved.")
     parser.add_argument('--merge_t', type=int, default=5,
                         help="Threshold for merging branches during airway skeleton parsing.")
 
@@ -176,7 +176,7 @@ if __name__ == '__main__':
 
     pred_mask_path = args.pred_mask_path
     save_path = args.save_path
-    save_Wingsnet_path = args.save_Wingsnet_path
+    save_ATM22_path = args.save_ATM22_path
     merge_t = args.merge_t
 
     flist = os.listdir(pred_mask_path)
@@ -188,5 +188,5 @@ if __name__ == '__main__':
         if save_path is not None:
             airway_topo = ours_skel_parse(pred, spacing, merge_t, save_path, case)
         
-        if save_Wingsnet_path is not None:
-            tree_parsing = wingsnet_skel_parse(pred, spacing, save_Wingsnet_path, case)
+        if save_ATM22_path is not None:
+            tree_parsing = atm22_skel_parse(pred, spacing, save_ATM22_path, case)

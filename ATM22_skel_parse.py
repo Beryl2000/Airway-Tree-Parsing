@@ -2,7 +2,8 @@
 """
 Divide the airway tree into branches
 FROM:
-Zheng, Hao, et al. "Alleviating class-wise gradient imbalance for pulmonary airway segmentation." IEEE transactions on medical imaging 40.9 (2021): 2452-2462.
+Zhang, Minghui, et al. "Multi-site, multi-domain airway tree modeling (ATM'22): a public benchmark for pulmonary airway segmentation." arXiv preprint arXiv:2303.05745 (2023).
+
 """
 
 import os
