@@ -3,6 +3,7 @@
 Divide the airway tree into branches
 FROM:
 Zhang, Minghui, et al. "Multi-site, multi-domain airway tree modeling (ATM'22): a public benchmark for pulmonary airway segmentation." arXiv preprint arXiv:2303.05745 (2023).
+https://github.com/EndoluminalSurgicalVision-IMR/ATM-22-Related-Work/tree/main/evaluation
 
 """
 
