@@ -228,7 +228,7 @@ def find_mainpart_index(Bi, basev):
             mainpart.append([i, cosine(basev, v)])
 
     flag = 0
-    mmm = None
+    mmm = 0
 
     # Find the index of the main part based on cosine similarity
     for i, cos in mainpart:
