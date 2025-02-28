@@ -1,7 +1,6 @@
 # Airway Tree Parsing
 
-This repository contains code for airway tree parsing using two algorithms: **Ours** and **ATM22**. The goal of the project is to parse the segmented tree into a meaningful representation for further analysis.
-
+This repository contains the code for airway tree parsing and the comparison results of the algorithms. Two algorithms are used: **Ours** and **ATM22**(https://github.com/EndoluminalSurgicalVision-IMR/ATM-22-Related-Work/tree/main/evaluation). The goal of the project is to parse the segmented airway tree structures from lung CT scans into meaningful representations. This allows for the evaluation of tree length and branching numbers of segmentation algorithms and provides support for clinical analysis.
 
 ## Requirements
 
@@ -19,9 +18,9 @@ You can install the necessary packages via pip:
 pip install -r requirements.txt
 ```
 
-## Demo
+## Code
 
-The `./demo_mask/` contains two airway segmentation labels from the training datasets of the [ATM22 challenge](https://github.com/EndoluminalSurgicalVision-IMR/ATM-22-Related-Work) and [AIIB23 challenge](https://github.com/Nandayang/AIIB23).
+First, place the mask of the airway tree that needs to be parsed in the folder `./demo_mask/` in the `.nii.gz` format.
 
 1. Run ours_skel_parse Only
 
@@ -45,28 +44,25 @@ This command will load predicted mask files from `./demo_mask/` and save the pro
 
 ## Results
 
-The following table summarizes the results of our methods on the provided demo data:
+The following table provides a detailed comparison of our method with the widely-used ATM22 challenge method on the demo data:
 
 | Method             | Case      | Centerline segment time | Airway tree parse time | Num of branches |
 |--------------------|--------------|-----------------------|-------------|---------------|
-| Ours    | ATM_001_0000.nii.gz        | 18s                | 13s   | 126        |
-| ATM22    | ATM_001_0000.nii.gz        | 30s                | 158s   | 129         |
-| Ours | AIIB23_77.nii.gz       | 12s                | 14s   | 183         |
-| ATM22 | AIIB23_77.nii.gz       | 36s                | 254s   | 190         |
-
+| Ours    | CASE073.nii.gz        | 18s                | 13s   | 126        |
+| ATM22    | CASE073.nii.gz        | 30s                | 158s   | 129         |
 
 
 <div style="text-align: center;">
-  <img src="./demo_output_Ours/ATM_001_0000.gif" alt="ATM_001_0000-Ours" width="45%">
-  <div><b>ATM_001_0000 - Ours</b></div>
+  <img src="./demo_output_Ours/CASE073.gif" alt="CASE073-Ours" width="45%">
+  <div><b>CASE073 - Ours</b></div>
 </div>
 
 <div style="text-align: center;">
-  <img src="./demo_output_ATM22/ATM_001_0000.gif" alt="ATM_001_0000-ATM22" width="45%">
-  <div><b>ATM_001_0000 - ATM22</b></div>
+  <img src="./demo_output_ATM22/CASE073.gif" alt="CASE073-ATM22" width="45%">
+  <div><b>CASE073 - ATM22</b></div>
 </div>
 
-<div style="text-align: center;">
+<!-- <div style="text-align: center;">
   <img src="./demo_output_Ours/AIIB23_77.gif" alt="AIIB23_77-Ours" width="45%">
   <div><b>AIIB23_77 - Ours</b></div>
 </div>
@@ -74,8 +70,9 @@ The following table summarizes the results of our methods on the provided demo d
 <div style="text-align: center;">
   <img src="./demo_output_ATM22/AIIB23_77.gif" alt="AIIB23_77-ATM22" width="45%">
   <div><b>AIIB23_77 - ATM22</b></div>
-</div>
+</div> -->
 
+It is evident that the airway tree parsing method from the ATM22 challenge is not only inefficient but also generates inaccurate airway segmentations. In contrast, our method delivers results that are both efficient and reliable.
 
 ## Citation
 
