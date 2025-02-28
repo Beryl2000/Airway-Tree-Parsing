@@ -48,13 +48,24 @@ The following table provides a detailed comparison of our method with the widely
 
 | Method             | Case      | Centerline segment time | Airway tree parse time | Num of branches |
 |--------------------|--------------|-----------------------|-------------|---------------|
-| Ours    | CASE073.nii.gz        | 18s                | 13s   | 126        |
-| ATM22    | CASE073.nii.gz        | 30s                | 158s   | 129         |
+| Ours    | CASE073       | 12s                | 14s   | 274        |
+| ATM22    | CASE073       | 38s                | 322s   | 298         |
 
+
+<div style="text-align: center;">
+  <img src="./demo_output_Ours/CASE073_model.png" alt="CASE073-Ours" width="45%">
+  <div><b>CASE073 - Ours</b></div>
+</div>
 
 <div style="text-align: center;">
   <img src="./demo_output_Ours/CASE073.gif" alt="CASE073-Ours" width="45%">
   <div><b>CASE073 - Ours</b></div>
+</div>
+
+
+<div style="text-align: center;">
+  <img src="./demo_output_ATM22/CASE073_model.png" alt="CASE073-ATM22" width="45%">
+  <div><b>CASE073 - ATM22</b></div>
 </div>
 
 <div style="text-align: center;">
@@ -62,15 +73,6 @@ The following table provides a detailed comparison of our method with the widely
   <div><b>CASE073 - ATM22</b></div>
 </div>
 
-<!-- <div style="text-align: center;">
-  <img src="./demo_output_Ours/AIIB23_77.gif" alt="AIIB23_77-Ours" width="45%">
-  <div><b>AIIB23_77 - Ours</b></div>
-</div>
-
-<div style="text-align: center;">
-  <img src="./demo_output_ATM22/AIIB23_77.gif" alt="AIIB23_77-ATM22" width="45%">
-  <div><b>AIIB23_77 - ATM22</b></div>
-</div> -->
 
 It is evident that the airway tree parsing method from the ATM22 challenge is not only inefficient but also generates inaccurate airway segmentations. In contrast, our method delivers results that are both efficient and reliable.
 

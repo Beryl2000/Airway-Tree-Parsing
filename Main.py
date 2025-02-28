@@ -182,6 +182,22 @@ def atm22_skel_parse(label, spacing, olddir, case):
     pl.close()
 
 
+    pl = pv.Plotter(off_screen=True)
+    for k in range(1, num + 1):
+        iso = 0.95
+        verts, faces, _, _ = marching_cubes(tree_parsing == k, iso)
+        verts[:, 0] = verts[:, 0] * spacing[0]
+        verts[:, 1] = verts[:, 1] * spacing[1]
+        verts[:, 2] = verts[:, 2] * spacing[2]
+        faces = np.c_[np.full(len(faces), 3), faces].astype(np.int32)
+        mesh_seg = pv.PolyData(verts, faces)
+        mesh_seg = mesh_seg.smooth(relaxation_factor=0.15)
+        pl.add_mesh(mesh_seg, color=colors[k - 1], style='surface')  #
+
+    pl.camera_position = 'yz'
+    pl.show(screenshot=os.path.join(olddir, case.split('.nii.gz')[0] + '_model.png'))
+
+
     # Save time information to a text file
     time_filename = os.path.join(olddir, case.split('.nii.gz')[0] + '_time.txt')
     with open(time_filename, 'w') as f:
