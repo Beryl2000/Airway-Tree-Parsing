@@ -6,6 +6,9 @@ import time
 import pyvista as pv
 from skimage.measure import marching_cubes
 from skimage.morphology import skeletonize_3d
+# import matplotlib
+# matplotlib.use('TkAgg')
+import matplotlib.pyplot as plt
 
 from util import *
 from ATM22_skel_parse import *
@@ -32,27 +35,46 @@ def ours_skel_parse(pred, spacing, merge_t, save_dir, case):
         order = 0
     else:
         order = 1
-    airway_topo = Topology_Tree(pred, order, merge_t)
+
+    remerge_l=['000']
+    airway_topo = Topology_Tree(pred, order, merge_t,remerge_l)
     airway_topo.sub(
     )  #Skeleton extraction and segmentation operations yield airway_topo.Bi
     airway_topo.merge(
     )  #Remove small segments in leaves and branches to update airway_topo.Bi
+
+    airway_topo.grade()  
+    airway_topo.regrade()  
+    if airway_topo.rb23==1 or airway_topo.rb12==1 :
+        airway_topo.remerge()
+        airway_topo.regrade() 
+
     end_time = time.time()
-    print('Centerline segment time %d seconds' % (end_time - start_time))
-    airway_topo.resize(
-        px, py, pz
-    )  #Perform resizing operation using input pixel size to obtain airway_topo.Bi_resize
+    centerline_time = end_time - start_time
+    print('Centerline segment time %d seconds' % centerline_time)
+
+    # Save airway_topo.Bi_resize a .npy file
+    airway_topo.resize(px, py, pz,os.path.join(save_dir, case.split('.nii.gz')[0] + '_parse.npy'))  #Perform resizing operation using input pixel size to obtain airway_topo.Bi_resize
     if not os.path.exists(save_dir):
         os.mkdir(save_dir)
     dir_r = os.path.join(save_dir, case.split('.nii.gz')[0] + '.stl')
     airway_topo.recons(dir_r)
     airway_topo.show_line1(save_dir, case)  #Visualize centerline segments
     start_time = time.time()
-    airway_topo.sub_model(start_time, save_dir, case)  #Tree parse
+
+    end_time=airway_topo.sub_model(start_time, save_dir, case)  #Tree parse
+    tree_parse_time = end_time - start_time
+    print('Airway tree parse time %d seconds' % tree_parse_time)
+    print('Number of branches %d ' % (len(airway_topo.Bi)))
+
+    # Save time information to a text file
+    time_filename = os.path.join(save_dir, case.split('.nii.gz')[0] + '_time.txt')
+    with open(time_filename, 'w') as f:
+        f.write('Centerline segment time %d seconds\n' % centerline_time)
+        f.write('Airway tree parse time %d seconds\n' % tree_parse_time)
+        f.write('Number of branches %d\n' % (len(airway_topo.Bi)))
 
     return airway_topo
-
-
 
 def atm22_skel_parse(label, spacing, olddir, case):
     colors = []
@@ -91,7 +113,8 @@ def atm22_skel_parse(label, spacing, olddir, case):
     skeleton = skeletonize_3d(label)
     skeleton_parse, cd, num = skeleton_parsing(skeleton)
     end_time = time.time()
-    print('Centerline segment time %d seconds' % (end_time - start_time))
+    centerline_time = end_time - start_time
+    print('Centerline segment time %d seconds' % centerline_time)
     mesh_airway_smooth = pv.read(dir_r)
     pl = pv.Plotter(off_screen=True)
     pl.add_mesh(mesh_airway_smooth,
@@ -135,9 +158,10 @@ def atm22_skel_parse(label, spacing, olddir, case):
             ad_matric, trachea, num)
 
     end_time = time.time()
-    print('Airway tree parse time %d seconds' % (end_time - start_time))
+    tree_parse_time = end_time - start_time
+    print('Airway tree parse time %d seconds' % tree_parse_time)
     print('Number of branches %d ' % (num))
-    pl = pv.Plotter()
+    pl = pv.Plotter(off_screen=True)
     pl.open_gif(os.path.join(olddir, case.split('.nii.gz')[0] + '.gif'))
     for k in range(1, num + 1):
         iso = 0.95
@@ -156,6 +180,15 @@ def atm22_skel_parse(label, spacing, olddir, case):
         pl.render()
         pl.write_frame()
     pl.close()
+
+
+    # Save time information to a text file
+    time_filename = os.path.join(olddir, case.split('.nii.gz')[0] + '_time.txt')
+    with open(time_filename, 'w') as f:
+        f.write('Centerline segment time %d seconds\n' % centerline_time)
+        f.write('Airway tree parse time %d seconds\n' % tree_parse_time)
+        f.write('Number of branches %d\n' % num)
+
 
     return tree_parsing
 
@@ -179,6 +212,14 @@ if __name__ == '__main__':
     save_ATM22_path = args.save_ATM22_path
     merge_t = args.merge_t
 
+
+
+    # pred_mask_path = './demo_mask/'
+    # save_path ='./demo_output_Ours/'
+    # save_ATM22_path = './demo_output_ATM22/' 
+    # merge_t = 5
+
+
     flist = os.listdir(pred_mask_path)
     flist.sort()
 
@@ -187,6 +228,6 @@ if __name__ == '__main__':
 
         if save_path is not None:
             airway_topo = ours_skel_parse(pred, spacing, merge_t, save_path, case)
-        
+
         if save_ATM22_path is not None:
             tree_parsing = atm22_skel_parse(pred, spacing, save_ATM22_path, case)

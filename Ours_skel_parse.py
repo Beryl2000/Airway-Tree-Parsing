@@ -169,11 +169,11 @@ def compute_base_vector(LABEL_TRANS, order):
     cha = maxz - minz
     if order == 1:
         center1_z = int(maxz - 0.1 * cha)
-        zzz2 = 0.5
+        zzz2 = 0.6
         center2_z = int(zzz2 * cha + minz)
     else:
         center1_z = int(minz + 0.1 * cha)
-        zzz2 = 0.5
+        zzz2 = 0.4
         center2_z = int(zzz2 * cha + minz)
     image1 = LABEL_TRANS[:, :, center1_z]
     image2 = LABEL_TRANS[:, :, center2_z]
@@ -202,7 +202,7 @@ def cosine(vector_a, vector_b):
     cosine_sim = dot_product / (norm_a * norm_b)
     return cosine_sim
 
-def find_mainpart_index(Bi, basev):
+def find_mainpart_index(maxzzz,Bi, basev):
     """
     This function processes the 'Bi' structure and finds the index of the main part
     based on cosine similarity with the provided base vector.
@@ -222,47 +222,36 @@ def find_mainpart_index(Bi, basev):
             break
         if len(bi['member']) == 0:
             continue
+        if len(bi['member']) >maxzzz/3.6: 
+            break
         v = np.array(bi['member'][-1]) - np.array(bi['start'])
 
-        if len(bi['member']) > 20:
-            mainpart.append([i, cosine(basev, v)])
+        if len(bi['member']) > 12:
+            mainpart.append([i, cosine(basev, v),len(bi['member'])])
 
     flag = 0
     mmm = 0
 
     # Find the index of the main part based on cosine similarity
-    for i, cos in mainpart:
-        if cos < 0.92 and flag == 0:
+    for index,(i, cos,lll) in enumerate(mainpart):
+        if cos < 0.928 and flag == 0:
             continue
-        if cos > 0.92:
+        if cos > 0.928:
             flag = 1
-        if cos < 0.92 and flag == 1:
+        if cos < 0.93 and flag == 1:
             mmm = i
             break
 
     return mmm
 
 def smooth_points(ori_ps):
-    """
-    Smooths a set of 3D points by performing interpolation, rounding, and removing duplicate points.
-    
-    The function performs several steps to smooth the input set of points. First, it selects a subset of points 
-    by linearly interpolating over the original set. Then, it rounds the interpolated points, adjusts any large 
-    differences in consecutive points, and removes duplicate points. Finally, the function returns the cleaned set 
-    of 3D points that are well-ordered and separated by small distances.
-    
-    Parameters:
-        ori_ps (numpy.ndarray): A 2D array of shape (n, 3) representing n 3D points where each row is a point 
-                                 with x, y, z coordinates.
-    
-    Returns:
-        numpy.ndarray: A 2D array of the smoothed and cleaned points after interpolation, rounding, and duplication 
-                       removal, with shape (m, 3), where m is the number of resulting points.
-    """
     inter = 3
     selected_indices = np.arange(0, len(ori_ps), len(ori_ps) // inter)
     selected_indices = np.append(selected_indices, [len(ori_ps) - 1], axis=0)
-    selected_points = ori_ps[selected_indices, :]
+    if abs(selected_indices[-2]-selected_indices[-1])<5:
+        selected_indices = np.delete(selected_indices, -2)
+
+    selected_points = ori_ps[selected_indices, :] 
 
     x_interp = interp1d(selected_indices,
                         selected_points[:, 0],
@@ -305,31 +294,41 @@ def smooth_points(ori_ps):
     indices = np.argsort(new_a[:, 2])
     new_a = new_a[indices, :]
 
-    unique_points = {}
+
+    # Step 1: Remove duplicates based on the third column (z)
+    unique_z_points = []
+    last_z = None
     for point in new_a:
-        if point[2] not in unique_points:
-            unique_points[point[2]] = point
+        if point[2] != last_z:
+            unique_z_points.append(point)
+            last_z = point[2]
 
-    cleaned_a = np.array(list(unique_points.values()))
+    unique_z_points = list(reversed(unique_z_points))
 
-    def is_within_26_neighborhood(point1, point2):
-        return np.all(np.abs(point1 - point2) <= 1)
+    # Step 2: Ensure continuity between adjacent points
+    final_points = [unique_z_points[0]]  # Start with the first point
 
-    final_points = []
-    for i in range(1, len(cleaned_a) - 1):
-        if is_within_26_neighborhood(
-                cleaned_a[i - 1], cleaned_a[i]) and is_within_26_neighborhood(
-                    cleaned_a[i], cleaned_a[i + 1]):
-            final_points.append(cleaned_a[i])
+    for i in range(1, len(unique_z_points)):
+        x, y, z = unique_z_points[i]
 
-    if is_within_26_neighborhood(cleaned_a[0], cleaned_a[1]):
-        final_points.insert(0, cleaned_a[0])
-    if is_within_26_neighborhood(cleaned_a[-2], cleaned_a[-1]):
-        final_points.append(cleaned_a[-1])
+        # Ensure continuity in x, y, and z within ±1 range from the last point
+        prev_x, prev_y, prev_z = final_points[-1]
 
-    new_a = np.array(final_points)
+        # Adjust to ensure the difference is within ±1
+        if abs(x - prev_x) > 1:
+            x = prev_x + np.sign(x - prev_x)
+        if abs(y - prev_y) > 1:
+            y = prev_y + np.sign(y - prev_y)
+        if abs(z - prev_z) > 1:
+            z = prev_z + np.sign(z - prev_z)
 
-    return new_a
+        final_points.append([x, y, z])
+
+    final_points = np.array(final_points)
+    flipped_points = np.flip(final_points, axis=0)
+
+    return flipped_points
+
 
 def process_mainairway_points(B, Bi, mmm):
     """
@@ -355,6 +354,7 @@ def process_mainairway_points(B, Bi, mmm):
     mainairway = np.array(mainairway)
     mainairway = np.unique(mainairway, axis=0)
 
+
     fullyB_reversed = np.array([row for row in B[::-1]])
     index_map = {tuple(row): i for i, row in enumerate(fullyB_reversed)}
 
@@ -364,13 +364,6 @@ def process_mainairway_points(B, Bi, mmm):
 
     mainairway = np.array(sorted(mainairway, key=sort_key))
 
-    for n in range(mainairway.shape[0] - 1):
-        if abs(mainairway[n, 0] - mainairway[n + 1, 0]) <= 1 and \
-           abs(mainairway[n, 1] - mainairway[n + 1, 1]) <= 1 and \
-           abs(mainairway[n, 2] - mainairway[n + 1, 2]) <= 1:
-            continue
-    nnn = -1 * (mainairway.shape[0] - n) - 5
-    mainairway = mainairway[:nnn]
 
     newmain = smooth_points(mainairway)
 
@@ -378,7 +371,7 @@ def process_mainairway_points(B, Bi, mmm):
     set_b = set(map(tuple, cut_main))
     result = [row.tolist() for row in B if tuple(row) not in set_b]
     B = np.array(result)
-    mainairway = mainairway[len(mainairway) - len(newmain):]
+    mainairway = mainairway[len(mainairway) - len(newmain):] 
 
     rows_to_replace = [
         np.where(np.all(B == m, axis=1))[0] for m in reversed(mainairway)
@@ -487,6 +480,38 @@ def merging(branch_dict, len_thre):
 
     return branch_dict
 
+def remerging(branch_dict,branch_dict_g,remerge_l): 
+    #大
+    cut_l=np.zeros(len(remerge_l),dtype=int)+1000
+    t=np.zeros(len(remerge_l),dtype=int)+1000
+    flag=np.zeros(len(remerge_l),dtype=int)
+    for i in range(len(branch_dict)):
+        if branch_dict_g[i]['fatherindex'] in remerge_l:
+            flag[remerge_l.index(branch_dict_g[i]['fatherindex'])]+=1
+            bi = branch_dict[i]['member'].copy()
+            bi.insert(0, branch_dict[i]['start'])
+            if 'end' in branch_dict[i]:
+                bi.append(branch_dict[i]['end'])
+            if len(bi)<=t[remerge_l.index(branch_dict_g[i]['fatherindex'])]:
+                t[remerge_l.index(branch_dict_g[i]['fatherindex'])]=len(bi)
+                cut_l[remerge_l.index(branch_dict_g[i]['fatherindex'])]=i
+    cut_l=list(cut_l)
+    br3=list(np.where(flag>2)[0])
+    cut_l=[n for i, n in enumerate(cut_l) if i not in br3]
+    for i in cut_l:
+        for j in range(i+1,len(branch_dict)):
+            if branch_dict[j]['fatherindex']==branch_dict[i]['index']:
+                branch_dict[j]['fatherindex']=branch_dict[i]['fatherindex']
+                cuti = branch_dict[i]['member'].copy()
+                if 'end' in branch_dict[i]:
+                    cuti.append(branch_dict[i]['end'])
+                cuti.append(branch_dict[j]['start'])
+                branch_dict[j]['start']=branch_dict[i]['start'].copy()
+                branch_dict[j]['member']= cuti+branch_dict[j]['member']
+    new_list = [x for i, x in enumerate(branch_dict) if i not in cut_l]
+    branch_dict=new_list
+    return branch_dict
+
 def tree_parsing_func(skeleton_parse, label, cd):
     #parse the airway tree
     edt, inds = ndimage.distance_transform_edt(1-skeleton_parse, return_indices=True)
@@ -512,7 +537,7 @@ class Topology_Tree:
         colors: List of colors for visualization.
     """
 
-    def __init__(self, LA, order, merge_t):
+    def __init__(self, LA, order, merge_t,remerge_l=[]):
         """
         Initializes the Topology_Tree instance with the given parameters.
         
@@ -530,7 +555,16 @@ class Topology_Tree:
         self.B_resize = []
         self.Bi_resize = []
         self.merge_t = merge_t
+        self.remerge_l=remerge_l
         self.colors = []
+        self.rb23=0
+        self.rb12=0
+        self.rb45=0
+        self.rb6=0
+        self.lb123=0
+        self.l010=0
+        self.numofzs=0
+        self.rb123=0
 
     def sub(self):
         """
@@ -555,7 +589,7 @@ class Topology_Tree:
             B[:, 2] = self.label.shape[2] - B[:, 2]
         Bi = subsection(B, debug=1)
         basev = compute_base_vector(LABEL_TRANS, self.order)
-        mmm = find_mainpart_index(Bi, basev)
+        mmm = find_mainpart_index(B[0,2],Bi, basev)
         if mmm > 1:
             B = process_mainairway_points(B, Bi, mmm)
             newBi = subsection(B, debug=1)
@@ -584,7 +618,366 @@ class Topology_Tree:
                     Bi[i]['member'] = member.tolist()
         self.Bi = Bi
 
-    def resize(self, px, py, pz):
+    def grade(self):
+        Bi_g = copy.deepcopy(self.Bi)
+        flag = np.zeros(self.Bi.__len__(), dtype=np.int8)
+        grade = '0'
+        Bi_g[0]['index'] = grade
+        Bi_g[0]['fatherindex'] = '-1'
+        if self.Bi[1]['start'][1] > self.Bi[2]['start'][1]:
+            Bi_g[1]['index'] = '01'
+            Bi_g[1]['fatherindex'] = '0'
+            Bi_g[2]['index'] = '00'
+            Bi_g[2]['fatherindex'] = '0'
+        else:
+            Bi_g[1]['index'] = '00'
+            Bi_g[1]['fatherindex'] = '0'
+            Bi_g[2]['index'] = '01'
+            Bi_g[2]['fatherindex'] = '0'
+        for i in range(3, self.Bi.__len__()):
+            for g in range(len(self.Bi)):
+                if self.Bi[g]['index'] == self.Bi[i]['fatherindex']:
+                    string = Bi_g[g]['index'] + str(flag[g])
+                    break
+            flag[g] += 1
+            Bi_g[i]['index'] = string
+            Bi_g[i]['fatherindex'] = Bi_g[g]['index']
+
+        self.Bi_g = Bi_g
+
+    def remerge(self):
+        Bi=remerging(self.Bi,self.Bi_g,self.remerge_l)
+        self.Bi=Bi
+        Topology_Tree.grade(self)
+
+    def regrade(self):
+        
+        vectors = [np.array([0, -1, 0]),np.array([0, 1, 0])]
+        self._process_grade('0',vectors, self._main_left_right)
+        
+        if self.order==1:
+            vectors = [np.array([0, -1, 0.1]),np.array([0, -1, -1])]
+        else:
+            vectors = [np.array([0, -1, 0.1]),np.array([0, -1, 1])]
+        self._process_grade('00', vectors,self._right)
+        
+        if self.order==1:
+            vectors = [np.array([0, 0, 1]), np.array([-1, -1, 0]),np.array([1, 0, 0])] 
+        else:
+            vectors = [np.array([0, 0, -1]), np.array([-1, -1, 0]),np.array([1, 0, 0])]
+        self._process_grade('000', vectors,self._right_upper)
+        
+        if self.order==1:
+            vectors = [np.array([1, -1, -0.25]), np.array([0, 0, -1])] 
+        else:
+            vectors = [np.array([1, -1, 0.25]),  np.array([0, 0, 1])]
+        self._process_grade('001', vectors,self._right_middle)
+        
+        vectors = [np.array([0, -1, 0]),np.array([1, 0, 0])]
+        self._process_grade('0010', vectors,self._seg0010)
+        
+        vectors = [np.array([0, 1, 0]),np.array([0, -1, 0])]
+        self._process_grade('00111', vectors,self._seg00111)
+        
+        vectors = [np.array([0, -1,0]),np.array([0, 1, 0])]
+        self._process_grade('001111', vectors,self._seg001111)
+        
+        vectors = [np.array([0, -1,0]),np.array([0, 1, 0])]
+        self._process_grade('0011111', vectors,self._seg0011111)
+
+        
+        if self.order==1:
+            vectors = [np.array([0, 1, 0]),np.array([0, 0.18, -1])]
+        else:
+            vectors = [np.array([0, 1, 0]),np.array([0, 0.18, 1])]
+        self._process_grade('01', vectors,self._left)
+        
+        if self.order==1:
+            vectors = [np.array([0, 0, 1]), np.array([0, 0, -1])]
+        else:
+            vectors = [np.array([0, 0, -1]),  np.array([0, 0, 1])]
+        self._process_grade('010', vectors,self._left_upper)
+        
+        if self.order==1:
+            vectors = [np.array([0, 1, 0]),np.array([1, 0, -1])]
+        else:
+            vectors = [np.array([0, 1, 0]),np.array([1, 0, 1])]
+        self._process_grade('0101', vectors,self._seg0101)
+        
+        if self.order==1:
+            vectors = [np.array([-1, 0, 0]), np.array([0, 0, -1])]
+        else:
+            vectors = [np.array([-1, 0, 0]),  np.array([0, 0, 1])]
+        self._process_grade('011', vectors,self._seg011)
+        
+        if self.order==1:
+            vectors= [np.array([1, 1, 0]),np.array([0,0 , -1])]
+        else:
+            vectors = [np.array([1, 1, 0]),np.array([0,0 , 1])]
+        self._process_grade('0111', vectors,self._seg0111)
+        
+        vectors= [np.array([0, 1, 0]),np.array([0, -1, 0])]
+        self._process_grade('01111', vectors,self._seg01111)
+
+    def _process_grade(self, startgrade, vectors,grade_func):
+        segments = [seg.copy() for seg in self.Bi_g if seg['fatherindex'] == startgrade]
+        segments = sorted(segments, key=lambda x: x['index'])
+        if len(segments) > 1:
+            grade_func(startgrade, vectors,segments)
+
+    def _main_left_right(self, startgrade,vectors, Blr):
+        Blr_values = np.array([self._calculate_similarity(Blr, vector) for vector in vectors])
+        haoma = ['00', '01'] 
+        if Blr_values.shape[1] == 2 :
+            self._update_segment_codes( Blr,Blr_values,haoma)
+
+    def _left(self, startgrade,vectors, Budr):
+        Bud_values = np.array([self._calculate_similarity(Budr, vector) for vector in vectors])
+        haoma = ['010', '011'] 
+        if max(Bud_values[0,:])<=0.7 or max(Bud_values[:,0])<=0.7:
+            self.l010 = 1 
+            self._handle_missing_branch(startgrade)
+        self._update_segment_codes( Budr,Bud_values,haoma)
+
+    def _left_upper(self, startgrade,vectors, B12345r):
+        B12345_values = np.array([self._calculate_similarity(B12345r, vector) for vector in vectors])
+        haoma = ['0100', '0101'] 
+        if B12345_values.shape[1] ==2:
+            if max(B12345_values[0,:])<=0.4:
+                self.lb123 = 1 
+                self._handle_missing_branch(startgrade)
+            self._update_segment_codes( B12345r,B12345_values,haoma)
+
+            if self.order==1:
+                vectors = [np.array([-1, 0, 1]), np.array([1, 0, 0])]
+            else:
+                vectors = [np.array([-1, 0, -1]),  np.array([1, 0, 0])]
+            self._process_grade('0100', vectors,self._seg0100)
+        elif B12345_values.shape[1] ==3:
+            if self.order==1:
+                vectors = [np.array([-1, 0, 1]), np.array([1, 0, 0]), np.array([0, 0, -1])]
+            else:
+                vectors = [np.array([-1, 0, -1]),np.array([1, 0, 0]),  np.array([0, 0, 1])]
+            B12345_values = np.array([self._calculate_similarity(B12345r, vector) for vector in vectors])
+            haoma=['01000','01001','0101']
+            self._update_segment_codes( B12345r,B12345_values,haoma)
+
+    def _seg0100(self, startgrade,vectors, B123r):
+        B123_values = np.array([self._calculate_similarity(B123r, vector) for vector in vectors])
+        haoma = ['01000', '01001'] 
+        if B123_values.shape[1] == 2 :
+            self._update_segment_codes( B123r,B123_values,haoma)
+        elif B123_values.shape[1] ==3:
+            if self.order==1:
+                vectors = [np.array([-1, 0, 1]), np.array([0, 1, -0.1]),np.array([1, 0, 0])]
+            else:
+                vectors = [np.array([-1, 0, -1]), np.array([0, 1, 0.1]),np.array([1, 0, 0])]
+            B123_values = np.array([self._calculate_similarity(B123r, vector) for vector in vectors])
+            haoma=['01000','01001','01002']
+            self._update_segment_codes( B123r,B123_values,haoma)
+
+    def _seg0101(self, startgrade,vectors, B45r):
+        B45_values = np.array([self._calculate_similarity(B45r, vector) for vector in vectors])
+        haoma = ['01010', '01011'] 
+        if B45_values.shape[1] ==2:
+            self._update_segment_codes( B45r,B45_values,haoma)
+
+    def _seg011(self, startgrade,vectors, B610r):
+        B610_values = np.array([self._calculate_similarity(B610r, vector) for vector in vectors])
+        haoma = ['0110', '0111'] 
+        if B610_values.shape[1] ==2:
+            self._update_segment_codes( B610r,B610_values,haoma)
+
+    def _seg0111(self, startgrade,vectors, B610r):
+        B610_values = np.array([self._calculate_similarity(B610r, vector) for vector in vectors])
+        haoma = ['01110', '01111'] 
+        if B610_values.shape[1] == 2 :
+            self._update_segment_codes( B610r,B610_values,haoma)
+        elif B610_values.shape[1] ==3:
+            if self.order==1:
+                vectors= [np.array([1, 1, 0]),np.array([0,0.3 , -1]),np.array([0,-0.3 , -1])]
+            else:
+                vectors = [np.array([1, 1, 0]),np.array([0,0.3 , 1]),np.array([0,-0.3 , 1])]
+            B610_values = np.array([self._calculate_similarity(B610r, vector) for vector in vectors])
+            haoma=['01110','011110','011111']
+            self._update_segment_codes( B610r,B610_values,haoma)
+
+    def _seg01111(self, startgrade,vectors, B610r):
+        B610_values = np.array([self._calculate_similarity(B610r, vector) for vector in vectors])
+        haoma = ['011110', '011111'] 
+        if B610_values.shape[1] ==2:
+            self._update_segment_codes( B610r,B610_values,haoma)
+
+    def _right(self, startgrade,vectors, Budr):
+        Bud_values = np.array([self._calculate_similarity(Budr, vector) for vector in vectors])
+        haoma = ['000', '001'] 
+        if Bud_values.shape[1] > 2 and np.where(np.max(Bud_values, axis=0) <= 0.85)[0].size == 1:##
+            self._handle_multiple_branches(haoma, Budr, Bud_values, startgrade,vectors)
+        elif max(Bud_values[0, :]) <= 0.85:
+            self.rb123 = 1 
+            self._handle_missing_branch(startgrade)
+        elif Bud_values.shape[1] ==2:
+            self._update_segment_codes( Budr,Bud_values,haoma)
+
+    def _right_upper(self, startgrade,vectors, B123r):
+        B123_values = np.array([self._calculate_similarity(B123r, vector) for vector in vectors])
+        haoma=['0000','0001','0002']
+        if B123_values.shape[1] ==3 :
+            self._update_segment_codes(B123r,B123_values,haoma)
+
+    def _right_middle(self, startgrade,vectors, B45r):
+        B45_values = np.array([self._calculate_similarity(B45r, vector) for vector in vectors])
+        haoma = ['0010', '0011'] 
+        if B45_values.shape[1] ==2:
+            if max(B45_values[0, :]) <= 0.5: 
+                self.rb45 = 1 
+                self._handle_missing_branch(startgrade)
+            self._update_segment_codes( B45r,B45_values,haoma)
+
+            if self.order==1:
+                vectors = [np.array([-1, -0.1, 0]), np.array([0, 0, -1])]
+            else:
+                vectors = [np.array([-1, -0.1, 0]),  np.array([0, 0, 1])]
+            self._process_grade('0011', vectors,self._seg0011)
+        elif B45_values.shape[1] ==3:
+            if self.order==1:
+                vectors = [np.array([1, -0.7, 0]), np.array([-1, 0, 0]), np.array([0, -0.4, -1])]
+            else:
+                vectors = [np.array([1, -0.7, 0]), np.array([-1, 0, 0]),  np.array([0, -0.4, 1])]
+            B45_values = np.array([self._calculate_similarity(B45r, vector) for vector in vectors])
+            haoma=['0010','00110','00111']
+            self._update_segment_codes( B45r,B45_values,haoma)
+
+    def _seg0011(self, startgrade,vectors, B610r):
+        B610_values = np.array([self._calculate_similarity(B610r, vector) for vector in vectors])
+        haoma = ['00110', '00111'] 
+        if B610_values.shape[1] ==2:
+            if max(B610_values[0, :]) <= 0.5:
+                self.rb6 = 1
+                self._handle_missing_branch(startgrade)
+            self._update_segment_codes( B610r,B610_values,haoma)
+
+    def _seg0010(self, startgrade,vectors, B45r):
+        B45_values = np.array([self._calculate_similarity(B45r, vector) for vector in vectors])
+        haoma = ['00100', '00101'] 
+        if B45_values.shape[1] == 2 :
+            self._update_segment_codes( B45r,B45_values,haoma)
+
+    def _seg00111(self, startgrade,vectors, B610r):
+        B610_values = np.array([self._calculate_similarity(B610r, vector) for vector in vectors])
+        haoma = ['001110', '001111'] 
+        if B610_values.shape[1] == 2 :
+            self._update_segment_codes( B610r,B610_values,haoma)
+        elif B610_values.shape[1] ==3:
+            if self.order==1:
+                vectors= [np.array([0, -1, 0]),np.array([0,-0.1 , -1]),np.array([0,0.3 , -1])]
+            else:
+                vectors = [np.array([0, -1, 0]),np.array([0,-0.1, 1]),np.array([0,0.3 , 1])]
+            B610_values = np.array([self._calculate_similarity(B610r, vector) for vector in vectors])
+            haoma=['0011110','0011111','001110']
+            self._update_segment_codes( B610r,B610_values,haoma)
+
+    def _seg001111(self, startgrade,vectors, B610r):
+        B610_values = np.array([self._calculate_similarity(B610r, vector) for vector in vectors])
+        haoma = ['0011110', '0011111'] 
+        if B610_values.shape[1] == 2 :
+            self._update_segment_codes( B610r,B610_values,haoma)
+        elif B610_values.shape[1] ==3:
+            if self.order==1:
+                vectors= [np.array([0, -1, 0]),np.array([0,-0.4 , -1]),np.array([0,0.2 , -1])]
+            else:
+                vectors = [np.array([0, -1, 0]),np.array([0,-0.4, 1]),np.array([0,0.2 , 1])]
+            B610_values = np.array([self._calculate_similarity(B610r, vector) for vector in vectors])
+            haoma=['0011110','00111110','00111111']
+            self._update_segment_codes( B610r,B610_values,haoma)
+
+    def _seg0011111(self, startgrade,vectors, B610r):
+        B610_values = np.array([self._calculate_similarity(B610r, vector) for vector in vectors])
+        haoma = ['00111110', '00111111'] 
+        if B610_values.shape[1] == 2 :
+            self._update_segment_codes( B610r,B610_values,haoma)
+
+    def _calculate_similarity(self,segments,vector):
+        similarities = []
+        for seg in segments:
+            start_point = np.array(seg['start'])
+            end_point = np.array(seg['end'] if 'end' in seg else seg['member'][-1])
+            similarities.append(cosine(end_point-start_point, vector))
+        return similarities
+    
+    def _handle_multiple_branches(self, haoma, segments, segment_values, startgrade,vectors):
+        viewed = []
+        wrongb = list(np.where(np.max(segment_values, axis=0) <= 0.75)[0])##33
+        for i, seg in enumerate(segments):
+            if i in wrongb:
+                continue
+            newgrade = haoma[0]
+            haoma.pop(0)
+            if newgrade == seg['index']:
+                continue
+            for j in range(len(self.Bi_g)):
+                if self.Bi_g[j]['index'][:len(seg['index'])] == seg['index'] and self.Bi_g[j]['index'] != seg['index'] and j not in viewed:
+                    viewed.append(j)
+                    numj = self.Bi_g[j]['index'][len(seg['index']):]
+                    self.Bi_g[j]['index'] = newgrade + numj
+                    numfj = self.Bi_g[j]['fatherindex'][len(seg['index']):]
+                    self.Bi_g[j]['fatherindex'] = newgrade + numfj
+            seg['index'] = newgrade
+        segments = [seg.copy() for seg in self.Bi_g if seg['fatherindex'] == startgrade]
+        segments = sorted(segments, key=lambda x: x['index'])
+        segment_values = np.array([self._calculate_similarity(segments, vector) for vector in vectors])
+        segment_values = np.delete(segment_values, wrongb, axis=1)
+        if np.argmax(segment_values[:, 0]) != 0 and np.argmax(segment_values[:, 1]) != 1:
+            self._exchange_grade(startgrade, segments)
+
+    def _handle_missing_branch(self, startgrade):
+        for j in range(len(self.Bi_g)):
+            if self.Bi_g[j]['index'][:len(startgrade)] == startgrade and self.Bi_g[j]['index'] != startgrade:
+                self.Bi_g[j]['index'] = startgrade + str(1) + self.Bi_g[j]['index'][len(startgrade):]
+                self.Bi_g[j]['fatherindex'] = startgrade + str(1) + self.Bi_g[j]['fatherindex'][len(startgrade):]
+    
+    def _update_segment_codes(self,bro, similarity_values, haoma):
+        viewed = []
+        # Initialize grades and assignment states
+        new_grades = [None] * len(bro)
+        assigned = [False] * len(haoma)
+        used_codes = set()
+        remaining_grades = list(range(len(bro)))
+
+        # Assign codes dynamically
+        while remaining_grades:
+            # Sort remaining segments by max similarity
+            remaining_grades.sort(key=lambda i: -max(similarity_values[:, i]))
+            current = remaining_grades.pop(0)
+
+            # Assign the most suitable code
+            sorted_indices = np.argsort(-similarity_values[:, current])
+            for idx in sorted_indices:
+                candidate_code = haoma[idx]
+                if not assigned[idx] or len(remaining_grades) == len(haoma) - len(used_codes):
+                    new_grades[current] = candidate_code
+                    assigned[idx] = True
+                    used_codes.add(candidate_code)
+                    break
+
+        # Update segment codes in Bi_g
+        for i, seg in enumerate(bro):
+            newgrade = new_grades[i]
+            if newgrade == seg['index']:
+                continue
+
+            for j in range(len(self.Bi_g)):
+                if self.Bi_g[j]['index'][:len(seg['index'])]==seg['index'] and self.Bi_g[j]['index']!=seg['index'] and j not in viewed: ###### B8 9 10    and j not in viewed
+                    viewed.append(j)                        
+                    numj=self.Bi_g[j]['index'][len(seg['index']):]
+                    self.Bi_g[j]['index']=newgrade+numj
+                    numfj=self.Bi_g[j]['fatherindex'][len(seg['index']):]
+                    self.Bi_g[j]['fatherindex']=newgrade+numfj
+                if self.Bi_g[j]['index']==seg['index'] and j not in viewed:
+                    self.Bi_g[j]['index']=newgrade  
+                    viewed.append(j)
+
+    def resize(self, px, py, pz,dir=None):
         """
         Resizes the branches and skeleton coordinates based on the given scaling factors.
 
@@ -624,7 +1017,9 @@ class Topology_Tree:
                 member[:, 1] = (member[:, 1] - self.o[1]) * self.psize[1]
                 member[:, 2] = (member[:, 2] - self.o[2]) * self.psize[2]
                 self.Bi_resize[i]['member'] = member.tolist()
-
+        if dir:
+            np.save(dir, np.array(self.Bi_resize))
+    
     def recons(self, dir):
         """
         Reconstructs the airway tree surface using marching cubes algorithm.
@@ -649,7 +1044,6 @@ class Topology_Tree:
         pl = pv.Plotter()
         pl.add_mesh(mesh_airway_smooth, color='#E96C6F', style='surface')
         mesh_airway_smooth.save(dir)
-
     def sub_model(self, st, save_dir, case):
         """
         Visualizes and saves a 3D model of the airway tree with branches.
@@ -678,8 +1072,8 @@ class Topology_Tree:
         mesh_airway = pv.read(
             os.path.join(save_dir,
                          case.split('.nii.gz')[0] + '.stl'))
-        pl = pv.Plotter()
-        pl.add_mesh(mesh_airway, color='white', style='surface', opacity=0.4)
+        # pl = pv.Plotter(off_screen=True)
+        # pl.add_mesh(mesh_airway, color='white', style='surface', opacity=0.4)
         skeleton_parse = cd = np.zeros(self.label.shape, dtype=np.int32)
         num = len(self.Bi)
         iii = 1
@@ -698,13 +1092,15 @@ class Topology_Tree:
         skeleton_parse[np.where(skeleton_parse != 0)] = 1
         tree_parsing = tree_parsing_func(skeleton_parse, self.label, cd)
         end_time = time.time()
-        print('Airway tree parse time %d seconds' % (end_time - st))
-        print('Number of branches %d ' % (num))
-        pl = pv.Plotter()
+
+
+        pl = pv.Plotter(off_screen=True)
         pl.open_gif(os.path.join(save_dir, case.split('.nii.gz')[0] + '.gif'))
         points = []
         labels = []
         for k in range(1, num + 1):
+            if np.sum(tree_parsing == k)==0:
+                continue
             points.append(self.Bi_resize[
                 k - 1]['member'][len(self.Bi_resize[k - 1]['member']) //
                                  2] if self.Bi_resize[k - 1]['member'] !=
@@ -729,8 +1125,37 @@ class Topology_Tree:
             pl.camera.azimuth = 360 * (i / n_frames)
             pl.render()
             pl.write_frame()
-
         pl.close()
+
+        pl = pv.Plotter(off_screen=True)
+        points = []
+        labels = []
+        for k in range(1, num + 1):
+            if np.sum(tree_parsing == k)==0:
+                continue
+            points.append(self.Bi_resize[
+                k - 1]['member'][len(self.Bi_resize[k - 1]['member']) //
+                                 2] if self.Bi_resize[k - 1]['member'] !=
+                          [] else self.Bi_resize[k - 1]['end'])
+            labels.append(self.Bi_resize[k - 1]['index'])
+            iso = 0.95
+            verts, faces, _, _ = marching_cubes(tree_parsing == k, iso)
+            verts[:, 0] = verts[:, 0] - self.o[0]
+            verts[:, 1] = verts[:, 1] - self.o[1]
+            verts[:, 2] = verts[:, 2] - self.o[2]
+            verts[:, 0] = verts[:, 0] * self.psize[0]
+            verts[:, 1] = verts[:, 1] * self.psize[1]
+            verts[:, 2] = verts[:, 2] * self.psize[2]
+            faces = np.c_[np.full(len(faces), 3), faces].astype(np.int32)
+            mesh_seg = pv.PolyData(verts, faces)
+            mesh_seg = mesh_seg.smooth(relaxation_factor=0.15)
+            pl.add_mesh(mesh_seg, color=self.colors[k - 1], style='surface')  #
+
+
+        pl.camera_position = 'yz'
+        pl.show(screenshot=os.path.join(save_dir, case.split('.nii.gz')[0] + '_model.png'))
+
+        return end_time
 
     def show_line1(self, save_dir, case):
         """
@@ -748,7 +1173,7 @@ class Topology_Tree:
                 '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B',
                 'C', 'D', 'E', 'F'
             ]
-            for i in range(400):
+            for i in range(600):
                 color = ''
                 for i in range(6):
                     color_number = color_list[random.randint(0, 15)]

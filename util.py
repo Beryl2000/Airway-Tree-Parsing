@@ -19,8 +19,7 @@ def load_itk_image(filename):
     elif a == b:
         return numpyImage, numpyOrigin, numpySpacing
 
-
-
+    
 def random_color():
     color_list = [
         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D',
@@ -34,7 +33,24 @@ def random_color():
 
     return color
 
+def save_itk(image, origin, spacing, filename):
+    """
+	:param image: images to be saved
+	:param origin: CT origin
+	:param spacing: CT spacing
+	:param filename: save name
+	:return: None
+	:param image:要保存的图像
+	:param原点:CT原点
+	:param spacing:CT间距
+	:param filename:保存名称
+	:return:无
+	"""
 
+    itkimage = sitk.GetImageFromArray(image)
+    itkimage.SetSpacing(spacing)
+    itkimage.SetOrigin(origin)
+    sitk.WriteImage(itkimage, filename)
 
 
 def maximum_3d(region01):
