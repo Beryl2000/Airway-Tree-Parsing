@@ -48,8 +48,8 @@ The following table provides a detailed comparison of our method with the widely
 
 | Method             | Case      | Centerline segment time | Airway tree parse time | Num of branches |
 |--------------------|--------------|-----------------------|-------------|---------------|
-| Ours    | CASE073.nii.gz        | 18s                | 13s   | 126        |
-| ATM22    | CASE073.nii.gz        | 30s                | 158s   | 129         |
+| Ours    | CASE073       | 12s                | 14s   | 274        |
+| ATM22    | CASE073       | 38s                | 322s   | 298         |
 
 
 <div style="text-align: center;">
