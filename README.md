@@ -81,13 +81,15 @@ It is evident that the airway tree parsing method from the ATM22 challenge is no
 If you use this project in your research, please cite the following papers:
 
 ```bibtex
-@article{yang2024multi,
-  title={Multi-Stage Airway Segmentation in Lung CT Based on Multi-scale Nested Residual UNet},
-  author={Yang, Bingyu and Liao, Huai and Huang, Xinyan and Tian, Qingyao and Wu, Jinlin and Hu, Jingdi and Liu, Hongbin},
-  journal={arXiv preprint arXiv:2410.18456},
-  year={2024}
+@misc{yang2025progressivecurriculumlearningscaleenhanced,
+      title={Progressive Curriculum Learning with Scale-Enhanced U-Net for Continuous Airway Segmentation}, 
+      author={Bingyu Yang and Qingyao Tian and Huai Liao and Xinyan Huang and Jinlin Wu and Jingdi Hu and Hongbin Liu},
+      year={2025},
+      eprint={2410.18456},
+      archivePrefix={arXiv},
+      primaryClass={eess.IV},
+      url={https://arxiv.org/abs/2410.18456}, 
 }
-
 @article{zhang2023multi,
   title={Multi-site, multi-domain airway tree modeling},
   author={Zhang, Minghui and Wu, Yangqian and Zhang, Hanxiao and Qin, Yulei and Zheng, Hao and Tang, Wen and Arnold, Corey and Pei, Chenhao and Yu, Pengxin and Nan, Yang and others},
